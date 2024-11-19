@@ -10,8 +10,11 @@ class GitHubApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Github Repositories',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      title: 'GitHub Repositories',
+      theme: ThemeData(
+        primarySwatch: Colors.teal, // Modificando a cor principal do tema para teal
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       home: GithubHomePage(),
     );
   }
@@ -31,23 +34,21 @@ class _GithubHomePageState extends State<GithubHomePage> {
     final url = 'https://api.github.com/users/$username/repos';
     try {
       final response = await http.get(Uri.parse(url));
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         setState(() {
           _repositories = json.decode(response.body);
           _errorMessage = null;
         });
-      }
-      else {
+      } else {
         setState(() {
           _repositories = [];
           _errorMessage = 'Usuário não encontrado!';
         });
       }
-    }
-    catch (e) {
+    } catch (e) {
       setState(() {
         _repositories = [];
-        _errorMessage = 'Erro ao buscar repositorios do usuario. Tente Novamente em alguns instantes!';
+        _errorMessage = 'Erro ao buscar repositórios do usuário. Tente novamente!';
       });
     }
   }
@@ -56,55 +57,90 @@ class _GithubHomePageState extends State<GithubHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Github Repositores'),
+        title: Text(
+          'GitHub Repositories',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Campo de texto para digitar o nome do usuário
             TextField(
               controller: _controller,
               decoration: InputDecoration(
-                labelText: 'Digite o nome de usuário do Github',
+                labelText: 'Digite o nome de usuário do GitHub',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
+                prefixIcon: Icon(Icons.person, color: Colors.teal),
+                labelStyle: TextStyle(fontSize: 18, color: Colors.teal),
               ),
             ),
             SizedBox(height: 16),
+            
+            // Botão para buscar os repositórios
             ElevatedButton(
-                onPressed: () {
-                  fetchRepositories(_controller.text.trim());
-                },
-                child: Text('Buscar Repositórios')
+              onPressed: () {
+                fetchRepositories(_controller.text.trim());
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.teal, // Cor de fundo
+                onPrimary: Colors.white, // Cor do texto
+                padding: EdgeInsets.symmetric(vertical: 14),
+                textStyle: TextStyle(fontSize: 16),
+              ),
+              child: Text('Buscar Repositórios'),
             ),
             SizedBox(height: 16),
-            if(_errorMessage != null)
+            
+            // Exibindo a mensagem de erro (caso ocorra)
+            if (_errorMessage != null)
               Text(
                 _errorMessage!,
                 style: TextStyle(color: Colors.red, fontSize: 16),
               ),
-            if(_repositories.isNotEmpty)
+            SizedBox(height: 16),
+            
+            // Exibindo os repositórios encontrados
+            if (_repositories.isNotEmpty)
               Expanded(
-                  child: ListView.builder(
-                    itemCount: _repositories.length,
-                    itemBuilder: (context, index) {
-                      final repo = _repositories[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(repo['name']),
-                          subtitle: Text(repo['description'] ?? 'Sem descrição'),
-                          trailing:  Text('⭐ ${repo['stargazers_count']}'),
+                child: ListView.builder(
+                  itemCount: _repositories.length,
+                  itemBuilder: (context, index) {
+                    final repo = _repositories[index];
+                    return Card(
+                      elevation: 4,
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(repo['owner']['avatar_url']),
                         ),
-                      );
-                    },
-                  )
-              )
+                        title: Text(
+                          repo['name'],
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          '${repo['description'] ?? 'Sem descrição'}\nLinguagem: ${repo['language'] ?? 'Indefinida'}',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        trailing: Text(
+                          '⭐ ${repo['stargazers_count']}',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            // Caso não haja repositórios, exibe uma mensagem
+            if (_repositories.isEmpty && _errorMessage == null)
+              Text(
+                'Nenhum repositório encontrado. Tente um nome de usuário diferente.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
           ],
         ),
       ),
     );
   }
 }
-
-
-
