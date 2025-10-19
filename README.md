@@ -6,4 +6,4 @@ O objetivo é permitir que se insira o nome de um usuário do GitHub e, ao clica
 
 ## License
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-%231C003F.svg)](./LICENSE)
